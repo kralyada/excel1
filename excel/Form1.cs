@@ -3,12 +3,14 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Globalization;
 using System.Text;
+using System.Windows.Forms;
 
 namespace excel
 {
     public partial class Простои : Form
     {
-        int failedRowsCount = 0;
+        
+       
 
         List<analysis> list = new List<analysis>();
         ApplicationDbContext db = new ApplicationDbContext();
@@ -73,14 +75,10 @@ namespace excel
                         note = ParseSt(row[15]),
 
                     };
-                    if (String.IsNullOrEmpty(validRows.Date_finish) == false)
-                    {
+                    
                         list.Add(validRows);
-                    }
-                    else
-                    {
-                        failedRowsCount++;
-                    }
+                       
+                    
 
                     number++;
                 }
@@ -143,27 +141,38 @@ namespace excel
         public void WriteExcel()
         {
             int g = 0;
+            int updateCount = 0;
+            int failedRowsCountAdd = 0;
             foreach (analysis excel in list)
             {
-
+                
                 var res = db.Analysis.AsNoTracking().FirstOrDefault(x => x.Date_start == excel.Date_start && x.region == excel.region);
                 if (res == null)
                 {
                     db.Analysis.Add(excel);
+                    g++;
                 }
                 else
                 {
-                    failedRowsCount++;
+        
+                    if (String.IsNullOrEmpty(res.Date_finish) == true)
+                    {
+                       
+                        res.Date_finish = excel.Date_finish;
+                        db.Analysis.Update(res);
+                        //textBox3.Text = res.Date_finish;
+                        updateCount++;
+                    }
+                    failedRowsCountAdd++;
                     excel.Date_start = res.Date_start;
                     excel.region = res.region;
                 }
-                
-                g++;
+               
             }
-            textBox3.Text = failedRowsCount.ToString();
+           
             db.SaveChanges();
 
-            MessageBox.Show($"Выгружено строк {g}, не выгружено {failedRowsCount}");
+            MessageBox.Show($"Выгружено {g} строк, не выгружено в таблицу {failedRowsCountAdd}, обновлено {updateCount}");
         }
 
         private void button3_Click(object sender, EventArgs e)
