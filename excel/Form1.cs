@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Globalization;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 namespace excel
@@ -132,6 +133,32 @@ namespace excel
                 return TimeSpan.Zero;
         }
 
+        public static string ConvertPeriodFormat(string period)
+        {
+           
+            {
+                // Проверяем, соответствует ли поле region формату "число дней часы:минуты"
+                Regex regex = new Regex(@"(\d+)дн\. (\d{2}):(\d{2})");
+                Match match = regex.Match(period);
+
+                if (match.Success)
+                {
+                    int days = int.Parse(match.Groups[1].Value);
+                    int hours = int.Parse(match.Groups[2].Value);
+                    int minutes = int.Parse(match.Groups[3].Value);
+
+                    // Преобразуем в формат "минуты:секунды"
+                    int totalMinutes = days * 24 * 60 + hours * 60 + minutes;
+                    int seconds = minutes * 60;
+
+                    return string.Format("{0}:{1}", totalMinutes, seconds);
+                }
+
+                return period; // Если формат region не соответствует ожидаемому, возвращаем исходное значение
+            }
+            
+        }
+
 
         private void button2_Click(object sender, EventArgs e)
         {
@@ -140,21 +167,35 @@ namespace excel
 
         public void WriteExcel()
         {
+            
             int g = 0;
             int updateCount = 0;
             int failedRowsCountAdd = 0;
             foreach (analysis excel in list)
             {
-                
+
+
                 var res = db.Analysis.AsNoTracking().FirstOrDefault(x => x.Date_start == excel.Date_start && x.region == excel.region);
+                
                 if (res == null)
                 {
+                   
+                   
                     db.Analysis.Add(excel);
                     g++;
                 }
                 else
                 {
-        
+
+                    if (string.IsNullOrEmpty(res.period) == true)
+                    {
+                        excel.period = "NaN";
+                    }
+                    else
+                    {
+                        res.period = ConvertPeriodFormat(res.period);
+                        db.Analysis.Update(res);
+                    }
                     if (String.IsNullOrEmpty(res.Date_finish) == true)
                     {
                        
