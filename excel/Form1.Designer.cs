@@ -36,6 +36,7 @@
             label1 = new Label();
             textBox2 = new TextBox();
             label2 = new Label();
+            textBox3 = new TextBox();
             SuspendLayout();
             // 
             // button1
@@ -106,12 +107,21 @@
             label2.TabIndex = 7;
             label2.Text = "Количество записей";
             // 
+            // textBox3
+            // 
+            textBox3.Location = new Point(226, 173);
+            textBox3.Name = "textBox3";
+            textBox3.Size = new Size(158, 23);
+            textBox3.TabIndex = 8;
+            textBox3.TextChanged += textBox3_TextChanged;
+            // 
             // Простои
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.White;
             ClientSize = new Size(452, 339);
+            Controls.Add(textBox3);
             Controls.Add(label2);
             Controls.Add(textBox2);
             Controls.Add(label1);
@@ -137,5 +147,6 @@
         private Label label1;
         private TextBox textBox2;
         private Label label2;
+        private TextBox textBox3;
     }
 }

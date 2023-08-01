@@ -1,4 +1,6 @@
 using ExcelDataReader;
+using Microsoft.EntityFrameworkCore;
+using System;
 using System.Globalization;
 using System.Text;
 
@@ -6,6 +8,7 @@ namespace excel
 {
     public partial class Простои : Form
     {
+        int failedRowsCount = 0;
 
         List<analysis> list = new List<analysis>();
         ApplicationDbContext db = new ApplicationDbContext();
@@ -49,11 +52,12 @@ namespace excel
 
                 var table = result.Tables[0];
                 int number = 0;
-
+                
                 for (int i = 4; i < table.Rows.Count - 1; i++)
                 {
                     var row = table.Rows[i].ItemArray;
-                    list.Add(new analysis()
+                    
+                    analysis validRows = new analysis()
                     {
                         Date_start = ParseSt(row[0]),
                         Change_start = Parse(row[2]),
@@ -68,9 +72,19 @@ namespace excel
                         coefficient = ParseSt(row[14]),
                         note = ParseSt(row[15]),
 
-                    });
+                    };
+                    if (String.IsNullOrEmpty(validRows.Date_finish) == false)
+                    {
+                        list.Add(validRows);
+                    }
+                    else
+                    {
+                        failedRowsCount++;
+                    }
+
                     number++;
                 }
+                
                 textBox2.Text = number.ToString();
             }
 
@@ -101,7 +115,7 @@ namespace excel
             }
         }
         public static DateTime ParseDate(object a)
-         {
+        {
             DateTime b;
             DateTime v = Convert.ToDateTime(null);
             if (DateTime.TryParse(Convert.ToString(a), out b))
@@ -114,7 +128,7 @@ namespace excel
         {
             TimeSpan b;
             string a_2 = Convert.ToString(a);
-            if (TimeSpan.TryParse(a_2.Replace("1 дн.", "1 day"), out b)) 
+            if (TimeSpan.TryParse(a_2.Replace("1 дн.", "1 day"), out b))
                 return b;
             else
                 return TimeSpan.Zero;
@@ -131,12 +145,25 @@ namespace excel
             int g = 0;
             foreach (analysis excel in list)
             {
-                db.Analysis.Add(excel);
+
+                var res = db.Analysis.AsNoTracking().FirstOrDefault(x => x.Date_start == excel.Date_start && x.region == excel.region);
+                if (res == null)
+                {
+                    db.Analysis.Add(excel);
+                }
+                else
+                {
+                    failedRowsCount++;
+                    excel.Date_start = res.Date_start;
+                    excel.region = res.region;
+                }
+                
                 g++;
             }
+            textBox3.Text = failedRowsCount.ToString();
             db.SaveChanges();
 
-            MessageBox.Show($"Выгружено строк {g}");
+            MessageBox.Show($"Выгружено строк {g}, не выгружено {failedRowsCount}");
         }
 
         private void button3_Click(object sender, EventArgs e)
@@ -145,6 +172,11 @@ namespace excel
         }
 
         private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox3_TextChanged(object sender, EventArgs e)
         {
 
         }
