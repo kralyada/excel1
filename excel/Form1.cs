@@ -155,13 +155,13 @@ namespace excel
                 {
                     int days = int.Parse(match.Groups[1].Value);
                     int minutes = int.Parse(match.Groups[2].Value);
-                    //int seconds = int.Parse(match.Groups[3].Value);
+                    int seconds = int.Parse(match.Groups[3].Value);
 
                     // Преобразуем в формат "минуты:секунды" 1дн. 08:49
                     int totalMinutes = days * 24 * 60 + minutes;
 
 
-                    return string.Format("{0}", totalMinutes);
+                    return string.Format("{0},{1}", totalMinutes, seconds); // LAST FIX
                 }
 
                 return period; // Если формат region не соответствует ожидаемому, возвращаем исходное значение
