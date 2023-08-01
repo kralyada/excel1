@@ -144,12 +144,12 @@ namespace excel
                 if (match.Success)
                 {
                     int days = int.Parse(match.Groups[1].Value);
-                    int hours = int.Parse(match.Groups[2].Value);
-                    int minutes = int.Parse(match.Groups[3].Value);
+                    int minutes = int.Parse(match.Groups[2].Value);
+                    int seconds = int.Parse(match.Groups[3].Value);
 
-                    // ѕреобразуем в формат "минуты:секунды"
-                    int totalMinutes = days * 24 * 60 + hours * 60 + minutes;
-                    int seconds = minutes * 60;
+                    // ѕреобразуем в формат "минуты:секунды" 1дн. 08:49
+                    int totalMinutes = days * 24 * 60 + minutes;
+                    
 
                     return string.Format("{0}:{1}", totalMinutes, seconds);
                 }
@@ -174,28 +174,24 @@ namespace excel
             foreach (analysis excel in list)
             {
 
-
+                //excel.period= ConvertPeriodFormat(excel.period);
+                
                 var res = db.Analysis.AsNoTracking().FirstOrDefault(x => x.Date_start == excel.Date_start && x.region == excel.region);
                 
                 if (res == null)
-                {
-                   
-                   
+                {     
                     db.Analysis.Add(excel);
                     g++;
                 }
                 else
                 {
-
-                    if (string.IsNullOrEmpty(res.period) == true)
-                    {
-                        excel.period = "NaN";
-                    }
-                    else
-                    {
+                    if(!String.IsNullOrEmpty(res.period)) {
                         res.period = ConvertPeriodFormat(res.period);
                         db.Analysis.Update(res);
+                        updateCount++;
                     }
+                   
+                  
                     if (String.IsNullOrEmpty(res.Date_finish) == true)
                     {
                        
