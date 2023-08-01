@@ -151,7 +151,7 @@ namespace excel
                     int totalMinutes = days * 24 * 60 + minutes;
                     
 
-                    return string.Format("{0}:{1}", totalMinutes, seconds);
+                    return string.Format("{0}", totalMinutes);
                 }
 
                 return period; // Если формат region не соответствует ожидаемому, возвращаем исходное значение
