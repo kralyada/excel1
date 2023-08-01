@@ -10,8 +10,8 @@ namespace excel
 {
     public partial class Простои : Form
     {
-        
-       
+
+
 
         List<analysis> list = new List<analysis>();
         ApplicationDbContext db = new ApplicationDbContext();
@@ -55,18 +55,18 @@ namespace excel
 
                 var table = result.Tables[0];
                 int number = 0;
-                
+
                 for (int i = 4; i < table.Rows.Count - 1; i++)
                 {
                     var row = table.Rows[i].ItemArray;
-                    
+
                     analysis validRows = new analysis()
                     {
                         Date_start = ParseSt(row[0]),
                         Change_start = Parse(row[2]),
                         Date_finish = ParseSt(row[3]),
                         Change_finish = Parse(row[4]),
-                        period = ParseSt(row[5]),
+                        period = ConvertPeriodFormat(ParseSt(row[5])),
                         condition = Parse(row[6]),
                         region = Parse(row[7]),
                         device = ParseSt(row[8]),
@@ -76,14 +76,14 @@ namespace excel
                         note = ParseSt(row[15]),
 
                     };
-                    
-                        list.Add(validRows);
-                       
-                    
+
+                    list.Add(validRows);
+
+
 
                     number++;
                 }
-                
+
                 textBox2.Text = number.ToString();
             }
 
@@ -135,28 +135,38 @@ namespace excel
 
         public static string ConvertPeriodFormat(string period)
         {
-           
+
             {
                 // Проверяем, соответствует ли поле region формату "число дней часы:минуты"
                 Regex regex = new Regex(@"(\d+)дн\. (\d{2}):(\d{2})");
                 Match match = regex.Match(period);
+                Regex minSec = new Regex(@"(\d{2}):(\d{2})");
+                Match minMatch = minSec.Match(period);
+
+
+                if (minMatch.Success)
+                {
+                    int minutes = int.Parse(minMatch.Groups[1].Value);
+                    int seconds = int.Parse((minMatch.Groups[2].Value));
+                    return string.Format("{0},{1}", minutes, seconds);
+                }
 
                 if (match.Success)
                 {
                     int days = int.Parse(match.Groups[1].Value);
                     int minutes = int.Parse(match.Groups[2].Value);
-                    int seconds = int.Parse(match.Groups[3].Value);
+                    //int seconds = int.Parse(match.Groups[3].Value);
 
                     // Преобразуем в формат "минуты:секунды" 1дн. 08:49
                     int totalMinutes = days * 24 * 60 + minutes;
-                    
+
 
                     return string.Format("{0}", totalMinutes);
                 }
 
                 return period; // Если формат region не соответствует ожидаемому, возвращаем исходное значение
             }
-            
+
         }
 
 
@@ -167,7 +177,7 @@ namespace excel
 
         public void WriteExcel()
         {
-            
+
             int g = 0;
             int updateCount = 0;
             int failedRowsCountAdd = 0;
@@ -175,26 +185,32 @@ namespace excel
             {
 
                 //excel.period= ConvertPeriodFormat(excel.period);
-                
+
                 var res = db.Analysis.AsNoTracking().FirstOrDefault(x => x.Date_start == excel.Date_start && x.region == excel.region);
-                
+
                 if (res == null)
-                {     
+                {
+                    //if (!String.IsNullOrEmpty(excel.period))
+                    //{
+                    //    excel.period = ConvertPeriodFormat(excel.period); 
+                    //}
+
                     db.Analysis.Add(excel);
                     g++;
                 }
                 else
                 {
-                    if(!String.IsNullOrEmpty(res.period)) {
-                        res.period = ConvertPeriodFormat(res.period);
-                        db.Analysis.Update(res);
+                    if (!String.IsNullOrEmpty(res.period))
+                    {
+                        
+                       
                         updateCount++;
                     }
-                   
-                  
+
+
                     if (String.IsNullOrEmpty(res.Date_finish) == true)
                     {
-                       
+
                         res.Date_finish = excel.Date_finish;
                         db.Analysis.Update(res);
                         //textBox3.Text = res.Date_finish;
@@ -204,9 +220,9 @@ namespace excel
                     excel.Date_start = res.Date_start;
                     excel.region = res.region;
                 }
-               
+
             }
-           
+
             db.SaveChanges();
 
             MessageBox.Show($"Выгружено {g} строк, не выгружено в таблицу {failedRowsCountAdd}, обновлено {updateCount}");
