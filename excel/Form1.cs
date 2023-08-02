@@ -146,25 +146,24 @@ namespace excel
 
                 if (minMatch.Success)
                 {
-                    int minutes = int.Parse(minMatch.Groups[1].Value);
-                    int seconds = int.Parse((minMatch.Groups[2].Value));
-                    return string.Format("{0},{1}", minutes, seconds);
+                    int hours = int.Parse(minMatch.Groups[1].Value);
+                    int minutes = int.Parse((minMatch.Groups[2].Value));
+                    int totalMinutes = hours * 60 + minutes;
+                    return totalMinutes.ToString();
                 }
 
                 if (match.Success)
                 {
                     int days = int.Parse(match.Groups[1].Value);
-                    int minutes = int.Parse(match.Groups[2].Value);
-                    int seconds = int.Parse(match.Groups[3].Value);
+                    int hours = int.Parse(match.Groups[2].Value);
+                    int minutes = int.Parse(match.Groups[3].Value);
 
                     // Преобразуем в формат "минуты:секунды" 1дн. 08:49
-                    int totalMinutes = days * 24 * 60 + minutes;
-
-
-                    return string.Format("{0},{1}", totalMinutes, seconds); // LAST FIX
+                    int totalMinutes = days * 24 * 60 + hours * 60 + minutes;
+                    return totalMinutes.ToString();
                 }
 
-                return period; // Если формат region не соответствует ожидаемому, возвращаем исходное значение
+                return period.ToString(); // Если формат region не соответствует ожидаемому, возвращаем исходное значение
             }
 
         }

@@ -45,5 +45,7 @@ namespace excel
         public string? reason { get; set; }
         public string? coefficient { get; set; }
         public string? note { get; set; }
+
+       
     }
 }
