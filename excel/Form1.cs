@@ -135,7 +135,6 @@ namespace excel
 
         public static string ConvertPeriodFormat(string period)
         {
-
             {
                 // Проверяем, соответствует ли поле region формату "число дней часы:минуты"
                 Regex regex = new Regex(@"(\d+)дн\. (\d{2}):(\d{2})");
@@ -200,9 +199,7 @@ namespace excel
                 else
                 {
                     if (!String.IsNullOrEmpty(res.period))
-                    {
-                        
-                       
+                    {             
                         updateCount++;
                     }
 
