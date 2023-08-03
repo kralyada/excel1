@@ -37,14 +37,15 @@ namespace excel
             openFileDialog.Filter = "Excel File (*.xls)|*.xls";//фильтр типа файлов
             openFileDialog.FilterIndex = 1; //количество возможного выбора файлов
             openFileDialog.ShowDialog(); //диалоговое окно
-            if (openFileDialog.FileName != null) //условие если файл выбран
+            if (!string.IsNullOrEmpty(openFileDialog.FileName)) // условие, если файл выбран
             {
-                textBox1.Text = openFileDialog.FileName;//вывод пути файла в текст бокс
-                filePath = openFileDialog.FileName; //присвоение переменной выбранный файл
+                textBox1.Text = openFileDialog.FileName; // вывод пути файла в текстовом поле
+                filePath = openFileDialog.FileName; // присвоение выбранного файла переменной
             }
-            else  //иначе пустой текстбокс
+            else // иначе пустое текстовое поле
             {
                 textBox1.Text = "Файл не выбран";
+                return; // выход из метода, если файл не выбран
             }
 
             using (FileStream stream = File.Open(filePath, FileMode.Open, FileAccess.Read))
@@ -157,7 +158,7 @@ namespace excel
                     int hours = int.Parse(match.Groups[2].Value);
                     int minutes = int.Parse(match.Groups[3].Value);
 
-                    // Преобразуем в формат "минуты:секунды" 1дн. 08:49
+                    // Преобразуем в формат "часы:минуты" формата типа 1дн. 08:49
                     int totalMinutes = days * 24 * 60 + hours * 60 + minutes;
                     return totalMinutes.ToString();
                 }
@@ -198,12 +199,6 @@ namespace excel
                 }
                 else
                 {
-                    if (!String.IsNullOrEmpty(res.period))
-                    {             
-                        updateCount++;
-                    }
-
-
                     if (String.IsNullOrEmpty(res.Date_finish) == true)
                     {
 
@@ -235,6 +230,11 @@ namespace excel
         }
 
         private void textBox3_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
         {
 
         }
